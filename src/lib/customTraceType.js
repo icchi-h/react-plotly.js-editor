@@ -1,6 +1,7 @@
 export function plotlyTraceToCustomTrace(trace) {
   if (
     trace.type === 'scatter' &&
+    trace.fill &&
     ['tozeroy', 'tozerox', 'tonexty', 'tonextx', 'toself', 'tonext'].includes(
       trace.fill
     )
@@ -8,16 +9,20 @@ export function plotlyTraceToCustomTrace(trace) {
     return 'area';
   } else if (
     trace.type === 'scatter' &&
-    (trace.mode === 'lines' || trace.mode === 'lines+markers')
+    (!trace.mode || trace.mode === 'lines' || trace.mode === 'lines+markers')
   ) {
     return 'line';
   }
   return trace.type;
 }
 
-export function customTraceToPlotlyTrace(customTraceType) {
-  if (customTraceType === 'line') {
+export function customTraceToPlotlyTrace(customTraceType, container) {
+  if (customTraceType === 'line' && container.mode) {
     return {type: 'scatter', mode: 'lines', fill: 'none'};
+  }
+
+  if (customTraceType === 'line' && !container.mode) {
+    return {type: 'scatter', mode: 'lines+markers', fill: 'none'};
   }
 
   if (customTraceType === 'scatter') {

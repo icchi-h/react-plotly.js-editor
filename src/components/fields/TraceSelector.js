@@ -65,7 +65,13 @@ class TraceSelector extends Component {
       this.traceOptions = [{label: 'Scatter', value: 'scatter'}];
     }
 
-    this.fullValue = plotlyTraceToCustomTrace(props.fullContainer);
+    this.fullValue = plotlyTraceToCustomTrace(props.container);
+  }
+
+  componentWillMount() {
+    const {container} = this.props;
+    const value = plotlyTraceToCustomTrace(container);
+    this.updatePlot(value);
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
@@ -73,7 +79,8 @@ class TraceSelector extends Component {
   }
 
   updatePlot(value) {
-    const update = customTraceToPlotlyTrace(value);
+    const {container} = this.props;
+    const update = customTraceToPlotlyTrace(value, container);
 
     if (this.props.updateContainer) {
       this.props.updateContainer(update);
@@ -97,7 +104,7 @@ TraceSelector.contextTypes = {
 
 TraceSelector.propTypes = {
   getValObject: PropTypes.func,
-  fullContainer: PropTypes.object.isRequired,
+  container: PropTypes.object.isRequired,
   fullValue: PropTypes.any.isRequired,
   updateContainer: PropTypes.func,
 };

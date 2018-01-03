@@ -38,7 +38,7 @@ describe('DataSelector', () => {
     const onUpdateTraces = jest.fn();
     const wrapper = render({onUpdateTraces}).find(DropdownWidget);
     wrapper.prop('onChange')('y1');
-    expect(onUpdateTraces.mock.calls[0][0]).toEqual({
+    expect(onUpdateTraces.mock.calls[2][0]).toEqual({
       update: {xsrc: 'y1', x: [2, 3, 4]},
       traceIndexes: [0],
     });
