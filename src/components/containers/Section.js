@@ -2,10 +2,13 @@ import Info from '../fields/Info';
 import MenuPanel from './MenuPanel';
 import React, {Component, cloneElement} from 'react';
 import PropTypes from 'prop-types';
-import unpackPlotProps from '../../lib/unpackPlotProps';
-import {containerConnectedContextTypes} from '../../lib/connectToContainer';
+import {
+  containerConnectedContextTypes,
+  localize,
+  unpackPlotProps,
+} from '../../lib';
 
-export default class Section extends Component {
+class Section extends Component {
   constructor(props, context) {
     super(props, context);
 
@@ -21,11 +24,22 @@ export default class Section extends Component {
   }
 
   processAndSetChildren(nextProps, nextContext) {
+    const {fullContainer} = nextContext;
+    const {localize: _} = nextProps;
     this.sectionVisible = false;
 
     const children = React.Children.toArray(nextProps.children);
     this.children = [];
     let menuPanel = null;
+
+    /*
+     * show opacity disabled message for scatter traces that have a fill 'tonexty' || 'tonextx'
+     * based on:
+     * https://github.com/plotly/plotly.js/blob/master/src/traces/scatter/clean_data.js#L13
+     */
+    const cannotSetTraceOpacity =
+      fullContainer.type === 'scatter' &&
+      (fullContainer.fill !== 'none' || fullContainer.fill !== 'toself');
 
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
@@ -47,6 +61,17 @@ export default class Section extends Component {
       let newProps = {};
       if (child.plotProps) {
         plotProps = child.plotProps;
+      } else if (cannotSetTraceOpacity && child.props.attr === 'opacity') {
+        this.sectionVisible = true;
+        const child = (
+          <Info>
+            {_(
+              'Trace opacity is not supported for a scatter trace with fill ' +
+                'or for a scatter trace that gets filled by another scatter trace.'
+            )}
+          </Info>
+        );
+        this.children.push(child);
       } else if (isAttr) {
         if (child.type.supplyPlotProps) {
           plotProps = child.type.supplyPlotProps(child.props, nextContext);
@@ -94,3 +119,4 @@ Section.propTypes = {
 };
 
 Section.contextTypes = containerConnectedContextTypes;
+export default localize(Section);
