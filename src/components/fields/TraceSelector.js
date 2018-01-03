@@ -75,6 +75,12 @@ class TraceSelector extends Component {
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
+    if (
+      !nextProps.container.type ||
+      (nextProps.container.type === 'scatter' && !nextProps.container.mode)
+    ) {
+      this.updatePlot({type: 'scatter', mode: 'lines+markers'});
+    }
     this.setLocals(nextProps, nextContext);
   }
 

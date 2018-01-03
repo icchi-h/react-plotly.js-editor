@@ -12,6 +12,8 @@ export function plotlyTraceToCustomTrace(trace) {
     (!trace.mode || trace.mode === 'lines' || trace.mode === 'lines+markers')
   ) {
     return 'line';
+  } else if (!trace.type) {
+    return 'line';
   }
   return trace.type;
 }
