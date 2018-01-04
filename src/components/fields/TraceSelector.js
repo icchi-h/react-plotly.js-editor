@@ -86,7 +86,7 @@ class TraceSelector extends Component {
       updateContainer({
         type: 'scatter',
         mode: fullContainer.mode,
-        fill: 'none',
+        fill: fullContainer.fill || container.fill,
       });
     }
     this.fullValue = plotlyTraceToCustomTrace(container);

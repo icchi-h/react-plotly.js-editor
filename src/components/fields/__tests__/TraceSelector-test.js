@@ -27,6 +27,24 @@ describe('TraceSelector', () => {
     expect(innerDropdown.prop('value')).toEqual('area');
   });
 
+  it.only('takes mode from fullData if not present in data, and recognizes trace correctly', () => {
+    const editorProps = {
+      ...fixtures.scatter({fullData: [{mode: 'lines'}]}),
+      onUpdate: jest.fn(),
+    };
+    const wrapper = mount(
+      <TestEditor {...editorProps} plotly={plotly}>
+        <TraceSection traceIndex={0}>
+          <TraceSelector attr="type" />
+        </TraceSection>
+      </TestEditor>
+    ).find(TraceSelector);
+
+    const innerDropdown = wrapper.find(Dropdown);
+
+    expect(innerDropdown.prop('value')).toEqual('line');
+  });
+
   it('interprets scatter + mode=lines as type=line', () => {
     const editorProps = {
       ...fixtures.scatter({data: [{mode: 'lines'}]}),
@@ -81,7 +99,7 @@ describe('TraceSelector', () => {
     const innerDropdown = wrapper.find(Dropdown);
     innerDropdown.prop('onChange')('line');
 
-    const payload = onUpdateTraces.mock.calls[1][0];
+    const payload = onUpdateTraces.mock.calls[0][0];
     expect(payload.update).toEqual({
       fill: 'none',
       mode: 'lines',
@@ -107,7 +125,7 @@ describe('TraceSelector', () => {
     const innerDropdown = wrapper.find(Dropdown);
     innerDropdown.prop('onChange')('area');
 
-    const payload = onUpdateTraces.mock.calls[1][0];
+    const payload = onUpdateTraces.mock.calls[0][0];
     expect(payload.update).toEqual({fill: 'tozeroy', type: 'scatter'});
   });
 });
