@@ -52,7 +52,6 @@ class TraceSelector extends Component {
         'tonext',
       ];
     }
-
     this.setLocals(props, context);
   }
 
@@ -64,30 +63,49 @@ class TraceSelector extends Component {
     } else {
       this.traceOptions = [{label: 'Scatter', value: 'scatter'}];
     }
-
     this.fullValue = plotlyTraceToCustomTrace(props.container);
   }
 
+  setTraceDefaults(container, fullContainer, updateContainer) {
+    /*
+     * Default plotly.js mode is variable:
+     * https://github.com/plotly/plotly.js/blob/master/src/traces/scatter/defaults.js#L32
+     * take it from fullContainer, or if it's not present (i.e. when there's no data
+     * in the plot yet, temporarily set it to lines + markers, it will get overriden
+     * in componentWillReceiveProps)
+     */
+
+    // set plotly.js defaults explicitly into gd.data | non empty x & y cases
+    // we don't want to set a mode in the case of x: [], y: [], because plotly.js
+    // default mode changes depending on # of data points, so we wait until we
+    // have data to set the mode.
+    if (
+      (container.type === 'scatter' && !container.mode && fullContainer.mode) ||
+      (!container.type && !container.mode && fullContainer.mode)
+    ) {
+      updateContainer({
+        type: 'scatter',
+        mode: fullContainer.mode,
+        fill: 'none',
+      });
+    }
+    this.fullValue = plotlyTraceToCustomTrace(container);
+  }
+
   componentWillMount() {
-    const {container} = this.props;
-    const value = plotlyTraceToCustomTrace(container);
-    this.updatePlot(value);
+    const {container, fullContainer, updateContainer} = this.props;
+    this.setTraceDefaults(container, fullContainer, updateContainer);
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
-    if (
-      !nextProps.container.type ||
-      (nextProps.container.type === 'scatter' && !nextProps.container.mode)
-    ) {
-      this.updatePlot({type: 'scatter', mode: 'lines+markers'});
-    }
+    const {container, fullContainer, updateContainer} = nextProps;
+    this.setTraceDefaults(container, fullContainer, updateContainer);
     this.setLocals(nextProps, nextContext);
   }
 
   updatePlot(value) {
     const {container} = this.props;
     const update = customTraceToPlotlyTrace(value, container);
-
     if (this.props.updateContainer) {
       this.props.updateContainer(update);
     }
@@ -111,6 +129,7 @@ TraceSelector.contextTypes = {
 TraceSelector.propTypes = {
   getValObject: PropTypes.func,
   container: PropTypes.object.isRequired,
+  fullContainer: PropTypes.object.isRequired,
   fullValue: PropTypes.any.isRequired,
   updateContainer: PropTypes.func,
 };

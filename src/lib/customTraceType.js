@@ -12,26 +12,29 @@ export function plotlyTraceToCustomTrace(trace) {
     (!trace.mode || trace.mode === 'lines' || trace.mode === 'lines+markers')
   ) {
     return 'line';
-  } else if (!trace.type) {
-    return 'line';
   }
   return trace.type;
 }
 
 export function customTraceToPlotlyTrace(customTraceType, container) {
-  if (customTraceType === 'line' && container.mode) {
+  // we don't want to set a mode until there is data in the plot,
+  // in this case TraceSelector's componentWillReceiveProps will set the mode to
+  // the plotly.js default mode, we don't want to override this here, this is why
+  // we always check for container.mode in our conditionals
+
+  if (customTraceType === 'line' && container.mode === 'markers') {
     return {type: 'scatter', mode: 'lines', fill: 'none'};
   }
 
-  if (customTraceType === 'line' && !container.mode) {
-    return {type: 'scatter', mode: 'lines+markers', fill: 'none'};
+  if (customTraceType === 'line' && container.mode) {
+    return {type: 'scatter', mode: container.mode, fill: 'none'};
   }
 
-  if (customTraceType === 'scatter') {
+  if (customTraceType === 'scatter' && container.mode) {
     return {type: 'scatter', mode: 'markers', fill: 'none'};
   }
 
-  if (customTraceType === 'area') {
+  if (customTraceType === 'area' && container.mode) {
     return {type: 'scatter', fill: 'tozeroy'};
   }
 
